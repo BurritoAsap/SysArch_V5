@@ -11,7 +11,7 @@ It collects sensor data in realtime, logs them to disk and also sends them throu
 There are currently three tasks:
 * **TaskAcquisition** is responsible for the acquisition of data from the connected sensors. It has the highest priority and is executed every 100ms. Sensor readings are collected through the **SensorControl** object and stored in a **Data** object, which is subsequently put in a commonly shared **BlockingQueue** for processing by the 'Logger Task'. A synchronized variable, declared in the main class, is used to store the most recent sensor values.  
 * **TaskGUI** displays the most recently collected sensor values to the user via command line. After doing so, it waits on the BlockingQueue for notification by the 'Acquisition Task'.
-* **TaskLogger** polls the **Data** objects from the BlockingQueue and writes the values of each object to a new line of a file.
+* **TaskLogger** polls the **Data** objects from the BlockingQueue and writes the values of each object to a new line of a file. When the queue has become empty, it waits for notification by the 'Acquisition Task'. 
 
 ## Development
 The NetBeans IDE is used for remote development on the Raspberry via SSH.
