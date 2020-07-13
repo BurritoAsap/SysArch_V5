@@ -6,31 +6,24 @@
 
 package vehicle;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Vehicle {
 
-    private static volatile Data currentData;
+    private static volatile SensorData currentData;
 
     public static void main(String args[])
     {
-        BlockingQueue<Data> queue = new ArrayBlockingQueue<>(10);
+        BlockingQueue<SensorData> queue = new ArrayBlockingQueue<>(10);
         currentData = null;
 
         SensorControl sensors = new SensorControl();
-
+        
         TaskAcquisition acquisition = new TaskAcquisition(queue, sensors);
         TaskLogger logger = new TaskLogger(queue);
         TaskGUI gui = new TaskGUI(queue);
@@ -56,12 +49,12 @@ public class Vehicle {
         }
     }
 
-    public synchronized static Data getCurrentData()
+    public synchronized static SensorData getCurrentData()
     {		
         return currentData;			
     }
 
-    public synchronized static void setCurrentData(Data data)
+    public synchronized static void setCurrentData(SensorData data)
     {	
         currentData = data;				
     }

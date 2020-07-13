@@ -5,10 +5,10 @@ import java.util.concurrent.BlockingQueue;
 
 public class TaskAcquisition extends Thread {
 	
-    BlockingQueue<Data> queue;
+    BlockingQueue<SensorData> queue;
     SensorControl sensors;
 
-    public TaskAcquisition(BlockingQueue<Data> queue, SensorControl sensors)
+    public TaskAcquisition(BlockingQueue<SensorData> queue, SensorControl sensors)
     {
         this.queue = queue;
         this.sensors = sensors;
@@ -17,7 +17,7 @@ public class TaskAcquisition extends Thread {
     public void run()
     {	
         //Get data from sensors
-        Data data = acquisiteData();
+        SensorData data = acquisiteData();
 
         //Set current data for GUI
         Vehicle.setCurrentData(data);
@@ -47,14 +47,16 @@ public class TaskAcquisition extends Thread {
 
     }
 
-    private Data acquisiteData() 
+    private SensorData acquisiteData() 
     {
-        Data data = new Data();
+        SensorData data = new SensorData();
 
         //TODO Errorhandling
-        data.setGyroData(sensors.readGyro());
-        data.setAccData(sensors.readAcc());
-        data.setTempData(sensors.readTemp());
+        data.setGyro(sensors.readGyro());
+        data.setAcc(sensors.readAcc());
+        data.setTemp(sensors.readTemp());
+        data.setAltitude(sensors.pressureToAltitude(sensors.readPressure()));
+        data.setMagnet(sensors.readMagnet());
 
         return data;
     }

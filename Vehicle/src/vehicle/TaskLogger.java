@@ -9,11 +9,11 @@ import java.util.concurrent.BlockingQueue;
 
 public class TaskLogger extends Thread {
 
-    BlockingQueue<Data> queue;
+    BlockingQueue<SensorData> queue;
 
     FileWriter writer;
 
-    public TaskLogger(BlockingQueue<Data> queue)
+    public TaskLogger(BlockingQueue<SensorData> queue)
     {
         this.queue = queue;				
     }
@@ -30,11 +30,14 @@ public class TaskLogger extends Thread {
 
         while(true)
         {
-            Data data = queue.poll();
+            SensorData data = queue.poll();
 
             if(data != null)
             {
-                writeLog(data);
+                synchronized(data)
+                {
+                    writeLog(data);                    
+                }
             }
             else
             {
@@ -53,7 +56,7 @@ public class TaskLogger extends Thread {
     }	
 	
 	
-    public void writeLog(Data data) 
+    public void writeLog(SensorData data) 
     {		
         try
         {
