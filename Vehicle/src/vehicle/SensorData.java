@@ -1,6 +1,7 @@
 package vehicle;
 
 import java.sql.Timestamp;
+import org.json.JSONObject;
 
 public class SensorData {
         
@@ -9,17 +10,25 @@ public class SensorData {
     private double[] magnet;
     private double temperature;
     private double altitude;
+    private double cpuTemperature;
 
     private Timestamp accStamp;
     private Timestamp gyroStamp;
     private Timestamp tempStamp;
     private Timestamp altStamp;
     private Timestamp magnetStamp;
+    private Timestamp cpuTempStemp;
 
     public SensorData()
     {
 
     }
+    
+    public JSONObject toJSON()
+    {
+        return null;
+    }
+    
     
     @Override
     public String toString()
@@ -27,9 +36,17 @@ public class SensorData {
         String data_string = "Gyro(" + gyro[0] + ", " + gyro[1] + ", " + gyro[2] + ") " 
                             + "Acc(" + acc[0] + ", " + acc[1] + ", " + acc[2] + ") "
                             + "Temp(" + temperature + ") " + "Alt(" + altitude + ")"
-                            + "Magnet(" + magnet[0] + ", " + magnet[1] + ", " + magnet[2] + ") ";
+                            + "Magnet(" + magnet[0] + ", " + magnet[1] + ", " + magnet[2] + ") "
+                            + "CPUTemp (" + cpuTemperature + ")";
         return  data_string;
     }
+    
+    public void setCPUTemp(double cpuTemp)
+    {
+        this.cpuTemperature = cpuTemp;
+        this.cpuTempStemp = new Timestamp(System.currentTimeMillis());
+    }
+    
     public void setMagnet(double[] mag)
     {
         this.magnet = mag;
@@ -60,6 +77,11 @@ public class SensorData {
         this.altStamp = new Timestamp(System.currentTimeMillis());
     }
     
+    public double getCPUTemp()
+    {
+        return cpuTemperature;
+    }
+    
     public double[] getMagnet()
     {
         return magnet;
@@ -83,6 +105,11 @@ public class SensorData {
     public double getAltitude()
     {
         return temperature;
+    }
+    
+    public Timestamp getStampCPUTemp()
+    {
+        return cpuTempStemp;
     }
     
     public Timestamp getStampManget()

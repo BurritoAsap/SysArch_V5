@@ -6,8 +6,6 @@ import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CDevice;
 import com.pi4j.io.i2c.I2CFactory;
 import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class SensorControl {
 
@@ -34,8 +32,7 @@ public class SensorControl {
     public static final int CTRL_REG2_MAG   = 0x21;  //Cntrol Reg
     public static final int CTRL_REG3_MAG   = 0x22;  //Cntrol Reg
     public static final int CTRL_REG4_MAG   = 0x23;  //Cntrol Reg
-    public static final int OUT_X_L         = 0x28;  //Magnet Register 6 Byte
-   
+    public static final int OUT_X_L         = 0x28;  //Magnet Register 6 Byte   
     
     I2CDevice gyroacc;
     I2CDevice magnet;
@@ -196,13 +193,7 @@ public class SensorControl {
         catch (IOException ex) {
             System.out.println("Couldnt read barometer data.");
         }
-        
-        /*for(int i = 0; i < reg_values.length ;i++)
-        {
-            System.out.println(Integer.toBinaryString(reg_values[i] & 0xFF));
-            System.out.println(reg_values[i] & 0xFF);
-        }*/
-        
+                
         double pressureMillibar = ((reg_values[2] & 0xFF) << 16 | (reg_values[1] & 0xFF) << 8 | (reg_values[0] & 0xFF)) / 4096.0;
         
         return pressureMillibar;
@@ -263,15 +254,15 @@ public class SensorControl {
         return gyro;
     }
 
-    //Read temperature from barometer sensor
+    //Read temperature from gyroacc sensor
     public double readTemp()
     {
         byte[] reg_values = new byte[2];
 
         try 
         {
-            reg_values[0] = (byte)baro.read(TEMP_OUT_L); 
-            reg_values[1] = (byte)baro.read(TEMP_OUT_H); 
+            reg_values[0] = (byte)gyroacc.read(OUT_L_TEMP); 
+            reg_values[1] = (byte)gyroacc.read(OUT_H_TEMP); 
         } 
         catch (IOException ex) {
             System.out.println("Couldnt read temperature data.");
@@ -282,8 +273,8 @@ public class SensorControl {
         double temp = ((int)(((reg_values[1] & 0xFF) & 0b01111111) << 8 | (reg_values[0] & 0xFF)));
         if(((reg_values[1] & 0xFF) & 0b10000000) == 1) temp *= -1;
         
-        temp = temp/480.0 + 42.5;
-        //temp = temp/16.0 + 25;
+        //temp = temp/480.0 + 42.5;
+        temp = temp/16.0 + 25;
         
         return temp;
     }

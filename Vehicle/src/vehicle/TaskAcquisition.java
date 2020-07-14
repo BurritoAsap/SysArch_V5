@@ -1,7 +1,11 @@
 
 package vehicle;
 
+import com.pi4j.system.SystemInfo;
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TaskAcquisition extends Thread {
 	
@@ -83,6 +87,14 @@ public class TaskAcquisition extends Thread {
         data.setTemp(sensors.readTemp());
         data.setAltitude(sensors.pressureToAltitude(sensors.readPressure()));
         data.setMagnet(sensors.readMagnet());
+        
+        try 
+        {
+            data.setCPUTemp(SystemInfo.getCpuTemperature());
+        } 
+        catch (Exception ex) {
+            System.out.println("Couldnt retrieve CPU temperature.");
+        }
 
         return data;
     }
