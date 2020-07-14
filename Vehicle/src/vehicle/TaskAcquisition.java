@@ -5,12 +5,14 @@ import java.util.concurrent.BlockingQueue;
 
 public class TaskAcquisition extends Thread {
 	
-    BlockingQueue<SensorData> queue;
+    BlockingQueue<SensorData> queueLogger;
+    BlockingQueue<SensorData> queueMQTT;
     SensorControl sensors;
 
-    public TaskAcquisition(BlockingQueue<SensorData> queue, SensorControl sensors)
+    public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT ,SensorControl sensors)
     {
-        this.queue = queue;
+        this.queueMQTT = queueMQTT;
+        this.queueLogger = queueLogger;
         this.sensors = sensors;
     }
 
@@ -22,8 +24,19 @@ public class TaskAcquisition extends Thread {
         //Set current data for GUI
         Vehicle.setCurrentData(data);
 
-        //Add data to queue
-        Boolean success;		
+        //Add data to Logging Queue
+        addDataToQueue(queueLogger, data);
+        
+        //Add data to MQTT Queue
+        addDataToQueue(queueMQTT, data);
+        
+
+    }
+    
+    private boolean addDataToQueue(BlockingQueue<SensorData> queue, SensorData data)
+    {
+        Boolean success;
+        
         try
         {
             success = queue.add(data);
@@ -33,18 +46,31 @@ public class TaskAcquisition extends Thread {
             success = false;
             e.printStackTrace();
         }		
-
+        
         if(!success)
         {
-            System.out.println("Queue is full. Data lost: " + data);
+            SensorData removedData = queue.poll();
+            System.out.println("[" + queue + "] Queue is full. Data lost: " + removedData);
+
+            //Try to add again
+            try
+            {
+                success = queue.add(data);
+            } 
+            catch (IllegalStateException  e) 
+            {
+                success = false;
+                e.printStackTrace();
+            }
         }
 
-        //Notify waiting threads (gui and logger)
+        //Notify waiting threads
         synchronized(queue)
         {
             queue.notifyAll();
         }
-
+        
+        return success;
     }
 
     private SensorData acquisiteData() 

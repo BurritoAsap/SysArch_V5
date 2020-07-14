@@ -19,7 +19,7 @@ public class TaskGUI extends Thread {
             
             if(Vehicle.getCurrentData() != null)
             {				
-                System.out.println(Vehicle.getCurrentData().toString());
+                //System.out.println(Vehicle.getCurrentData().toString());
             }
 
             synchronized(queue)

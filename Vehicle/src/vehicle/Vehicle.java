@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package vehicle;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -19,26 +13,31 @@ public class Vehicle {
 
     public static void main(String args[])
     {
-        BlockingQueue<SensorData> queue = new ArrayBlockingQueue<>(10);
+        BlockingQueue<SensorData> queueLogger = new ArrayBlockingQueue<>(10);
+        BlockingQueue<SensorData> queueMQTT = new ArrayBlockingQueue<>(50);
+        
         currentData = null;
 
         SensorControl sensors = new SensorControl();
         
-        TaskAcquisition acquisition = new TaskAcquisition(queue, sensors);
-        TaskLogger logger = new TaskLogger(queue);
-        TaskGUI gui = new TaskGUI(queue);
+        TaskAcquisition acquisition = new TaskAcquisition(queueLogger, queueMQTT, sensors);
+        TaskLogger logger = new TaskLogger(queueLogger);
+        TaskGUI gui = new TaskGUI(queueLogger);
+        TaskMQTT mqtt = new TaskMQTT(queueMQTT);
 
         acquisition.setPriority(6);
         logger.setPriority(5);
-        gui.setPriority(4);		
+        mqtt.setPriority(4);
+        gui.setPriority(3);	
 
         //Run acquisiton task every 100ms
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(acquisition, 0, 100, TimeUnit.MILLISECONDS);
 
-        //Start logger and gui thread to run indefinitely
+        //Start logger, mqtt and gui thread to run indefinitely
         logger.start();
         gui.start();
+        mqtt.start();
 
 
 

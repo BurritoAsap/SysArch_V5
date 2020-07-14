@@ -31,7 +31,7 @@ public class TaskLogger extends Thread {
         while(true)
         {
             SensorData data = queue.poll();
-
+            
             if(data != null)
             {
                 synchronized(data)
