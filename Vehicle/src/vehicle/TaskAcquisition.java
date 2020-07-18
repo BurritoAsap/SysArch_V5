@@ -17,7 +17,7 @@ public class TaskAcquisition extends Thread {
     public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT,  BlockingQueue<SensorData> queueGUI, SensorControl sensors)
     {
         this.queueMQTT = queueMQTT;
-        this.queueLogger = queueGUI;
+        this.queueGUI = queueGUI;
         this.queueLogger = queueLogger;
         this.sensors = sensors;
     }

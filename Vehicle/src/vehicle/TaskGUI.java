@@ -19,7 +19,7 @@ public class TaskGUI extends Thread {
             try
             {
                 SensorData data = queue.take();  
-                System.out.println(data.toString());              
+                //System.out.println(data.toString());              
             }
             catch(InterruptedException e){
                 
