@@ -29,27 +29,16 @@ public class TaskLogger extends Thread {
         }
 
         while(true)
-        {
-            SensorData data = queue.poll();
+        {           
+            try
+            {
+                SensorData data = queue.take();  
+                writeLog(data);              
+            }
+            catch(InterruptedException e){
+                
+            }
             
-            if(data != null)
-            {
-                synchronized(data)
-                {
-                    writeLog(data);                    
-                }
-            }
-            else
-            {
-                synchronized(queue)
-                {
-                    try {
-                        queue.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
         }
 
 
@@ -61,7 +50,7 @@ public class TaskLogger extends Thread {
         try
         {
             writer = new FileWriter("vehicle.log", true);            
-            writer.append(data.toString() + System.lineSeparator());	
+            writer.append(data.toJSON().toString() + System.lineSeparator());	
             writer.close();
         } 
         catch (IOException e) 

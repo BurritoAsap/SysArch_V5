@@ -1,5 +1,6 @@
 package vehicle;
 
+import java.sql.Timestamp;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
@@ -10,11 +11,19 @@ import java.util.concurrent.TimeUnit;
 public class Vehicle {
 
     private static volatile SensorData currentData;
+    
+    //Login/Logout
+    private static String userName;
+    private static String userFullName;
+    private static String userEmail;
+    private static Boolean loggedIn;
+    private static long timestamp;
 
     public static void main(String args[])
     {
+        BlockingQueue<SensorData> queueGUI = new ArrayBlockingQueue<>(10);
         BlockingQueue<SensorData> queueLogger = new ArrayBlockingQueue<>(10);
-        BlockingQueue<SensorData> queueMQTT = new ArrayBlockingQueue<>(50);
+        BlockingQueue<SensorData> queueMQTT = new ArrayBlockingQueue<>(500);
         
         currentData = null;
 
@@ -22,7 +31,7 @@ public class Vehicle {
         
         TaskAcquisition acquisition = new TaskAcquisition(queueLogger, queueMQTT, sensors);
         TaskLogger logger = new TaskLogger(queueLogger);
-        TaskGUI gui = new TaskGUI(queueLogger);
+        TaskGUI gui = new TaskGUI(queueGUI);
         TaskMQTT mqtt = new TaskMQTT(queueMQTT);
 
         acquisition.setPriority(6);
@@ -40,12 +49,28 @@ public class Vehicle {
         mqtt.start();
 
 
-
-
         while(true)
         {
 
         }
+    }    
+        
+    public synchronized static void logIn(String name, String fullName, String email, long time)
+    {	
+        userName = name;
+        userFullName = fullName;
+        userEmail = email;
+        loggedIn = true;
+        timestamp = time;
+        
+        System.out.println("User Logged In @" + new Timestamp(timestamp) + ": " + userName + " " + userFullName + " " + userEmail);
+    }
+    
+    public synchronized static void logOut(long time)
+    {
+        loggedIn = false;        
+        timestamp = time;
+        System.out.println("User Logged Out @" + new Timestamp(timestamp) + ".");
     }
 
     public synchronized static SensorData getCurrentData()

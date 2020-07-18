@@ -1,6 +1,8 @@
 package vehicle;
 
+import java.io.DataInputStream;
 import java.sql.Timestamp;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SensorData {
@@ -17,7 +19,7 @@ public class SensorData {
     private Timestamp tempStamp;
     private Timestamp altStamp;
     private Timestamp magnetStamp;
-    private Timestamp cpuTempStemp;
+    private Timestamp cpuTempStamp;
 
     public SensorData()
     {
@@ -26,7 +28,61 @@ public class SensorData {
     
     public JSONObject toJSON()
     {
-        return null;
+        JSONObject obj = new JSONObject();
+        
+        JSONArray s1 = new JSONArray();
+        JSONArray s3 = new JSONArray();
+        
+        //SensorValue1
+        JSONObject vTemp = new JSONObject();
+        vTemp.put("name", "Temperature");
+        vTemp.put("timestamp", tempStamp.getTime());
+        vTemp.put("value", temperature);
+        
+        JSONObject vAlt = new JSONObject();
+        vAlt.put("name", "Altitude");
+        vAlt.put("timestamp", altStamp.getTime());
+        vAlt.put("value", altitude);
+        
+        JSONObject vCPUTemp = new JSONObject();
+        vCPUTemp.put("name", "CPUTemperature");
+        vCPUTemp.put("timestamp", cpuTempStamp.getTime());
+        vCPUTemp.put("value", cpuTemperature);
+        
+        //SensorValue3
+        JSONObject vAcc = new JSONObject();
+        vAcc.put("name", "Acceleration");
+        vAcc.put("timestamp", accStamp.getTime());
+        vAcc.put("valueX", acc[0]);
+        vAcc.put("valueY", acc[1]);
+        vAcc.put("valueZ", acc[2]);
+        
+        JSONObject vGyro = new JSONObject();
+        vGyro.put("name", "Gyro");
+        vGyro.put("timestamp", gyroStamp.getTime());
+        vGyro.put("valueX", gyro[0]);
+        vGyro.put("valueY", gyro[1]);
+        vGyro.put("valueZ", gyro[2]);
+        
+        JSONObject vMagnet = new JSONObject();
+        vMagnet.put("name", "Magnet");
+        vMagnet.put("timestamp", magnetStamp.getTime());
+        vMagnet.put("valueX", magnet[0]);
+        vMagnet.put("valueY", magnet[1]);
+        vMagnet.put("valueZ", magnet[2]);
+        
+        s1.put(vTemp);
+        s1.put(vAlt);
+        s1.put(vCPUTemp);
+        
+        s3.put(vAcc);
+        s3.put(vGyro);
+        s3.put(vMagnet);
+        
+        obj.put("Sensor1Val", s1);
+        obj.put("Sensor3Val", s3);  
+                        
+        return obj;
     }
     
     
@@ -44,7 +100,7 @@ public class SensorData {
     public void setCPUTemp(double cpuTemp)
     {
         this.cpuTemperature = cpuTemp;
-        this.cpuTempStemp = new Timestamp(System.currentTimeMillis());
+        this.cpuTempStamp = new Timestamp(System.currentTimeMillis());
     }
     
     public void setMagnet(double[] mag)
@@ -109,7 +165,7 @@ public class SensorData {
     
     public Timestamp getStampCPUTemp()
     {
-        return cpuTempStemp;
+        return cpuTempStamp;
     }
     
     public Timestamp getStampManget()
