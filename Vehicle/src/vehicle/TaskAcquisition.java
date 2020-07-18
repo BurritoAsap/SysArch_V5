@@ -11,11 +11,13 @@ public class TaskAcquisition extends Thread {
 	
     BlockingQueue<SensorData> queueLogger;
     BlockingQueue<SensorData> queueMQTT;
+    BlockingQueue<SensorData> queueGUI;
     SensorControl sensors;
 
-    public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT ,SensorControl sensors)
+    public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT,  BlockingQueue<SensorData> queueGUI, SensorControl sensors)
     {
         this.queueMQTT = queueMQTT;
+        this.queueLogger = queueGUI;
         this.queueLogger = queueLogger;
         this.sensors = sensors;
     }
@@ -25,14 +27,14 @@ public class TaskAcquisition extends Thread {
         //Get data from sensors
         SensorData data = acquisiteData();
 
-        //Set current data for GUI
-        Vehicle.setCurrentData(data);
-
         //Add data to Logging Queue
         addDataToQueue(queueLogger, data);
         
         //Add data to MQTT Queue
         addDataToQueue(queueMQTT, data);
+        
+        //Add data to GUI Queue
+        addDataToQueue(queueGUI, data);
         
 
     }

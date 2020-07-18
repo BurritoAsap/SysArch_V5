@@ -1,9 +1,6 @@
 
 package vehicle;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,7 +26,6 @@ public class TaskMQTT extends Thread implements MqttCallback{
     
     String topicPublishSensor = "/SysArch/V5/sensor";
     String topicSubscribeLogin = "/SysArch/V5/car";
-
 
     public TaskMQTT(BlockingQueue<SensorData> queue)
     {
@@ -69,8 +65,7 @@ public class TaskMQTT extends Thread implements MqttCallback{
             Logger.getLogger(TaskMQTT.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        System.out.println("MQTT initialized.");
-        
+        System.out.println("MQTT initialized.");        
     }
 
     public void run()

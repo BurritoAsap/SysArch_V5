@@ -15,26 +15,16 @@ public class TaskGUI extends Thread {
     public void run()
     {
         while(true)
-        {		
-            
-            if(Vehicle.getCurrentData() != null)
-            {				
-                //System.out.println(Vehicle.getCurrentData().toJSON().toString());
-            }
-
-            synchronized(queue)
+        {           
+            try
             {
-                try 
-                {
-                    queue.wait();
-                } 
-                catch (InterruptedException e) 
-                {
-                    e.printStackTrace();
-                }
+                SensorData data = queue.take();  
+                System.out.println(data.toString());              
             }
-
-
+            catch(InterruptedException e){
+                
+            }
+            
         }		
     }
     	

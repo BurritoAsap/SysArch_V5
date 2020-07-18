@@ -12,7 +12,7 @@ public class Vehicle {
 
     private static volatile SensorData currentData;
     
-    //Login/Logout
+    //Userdata
     private static String userName;
     private static String userFullName;
     private static String userEmail;
@@ -21,15 +21,13 @@ public class Vehicle {
 
     public static void main(String args[])
     {
-        BlockingQueue<SensorData> queueGUI = new ArrayBlockingQueue<>(10);
-        BlockingQueue<SensorData> queueLogger = new ArrayBlockingQueue<>(10);
+        BlockingQueue<SensorData> queueGUI = new ArrayBlockingQueue<>(50);
+        BlockingQueue<SensorData> queueLogger = new ArrayBlockingQueue<>(50);
         BlockingQueue<SensorData> queueMQTT = new ArrayBlockingQueue<>(500);
         
-        currentData = null;
-
         SensorControl sensors = new SensorControl();
         
-        TaskAcquisition acquisition = new TaskAcquisition(queueLogger, queueMQTT, sensors);
+        TaskAcquisition acquisition = new TaskAcquisition(queueLogger, queueMQTT, queueGUI, sensors);
         TaskLogger logger = new TaskLogger(queueLogger);
         TaskGUI gui = new TaskGUI(queueGUI);
         TaskMQTT mqtt = new TaskMQTT(queueMQTT);
@@ -73,17 +71,6 @@ public class Vehicle {
         System.out.println("User Logged Out @" + new Timestamp(timestamp) + ".");
     }
 
-    public synchronized static SensorData getCurrentData()
-    {		
-        return currentData;			
-    }
-
-    public synchronized static void setCurrentData(SensorData data)
-    {	
-        currentData = data;				
-    }
-
-	
 	
 	
 	
