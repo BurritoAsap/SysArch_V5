@@ -1,9 +1,8 @@
 
 package vehicle;
 
+import java.sql.Timestamp;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -17,6 +16,7 @@ import org.json.JSONTokener;
 public class TaskMQTT extends Thread implements MqttCallback{
 
     BlockingQueue<SensorData> queue;
+    BlockingQueue<String> queueGUI;
     
     MqttClient client;    
     MqttTopic topicPub;
@@ -27,16 +27,17 @@ public class TaskMQTT extends Thread implements MqttCallback{
     String topicPublishSensor = "/SysArch/V5/sensor";
     String topicSubscribeLogin = "/SysArch/V5/car";
 
-    public TaskMQTT(BlockingQueue<SensorData> queue)
+    public TaskMQTT(BlockingQueue<SensorData> queue, BlockingQueue<String> queueGUI)
     {
-        this.queue = queue;	
+        this.queue = queue;
+        this.queueGUI = queueGUI;
         
         try 
         {
             client = new MqttClient(broker, String.valueOf(System.nanoTime()));
         } 
         catch (MqttException ex) {
-            Logger.getLogger(TaskMQTT.class.getName()).log(Level.SEVERE, null, ex);
+            queueGUI.offer("Couldnt create MqttClient instance: " + ex.getMessage());
         }
         
         client.setCallback(this);
@@ -52,7 +53,7 @@ public class TaskMQTT extends Thread implements MqttCallback{
             client.connect(opts); //connects the broker with connect options
         } 
         catch (MqttException ex) {
-            Logger.getLogger(TaskMQTT.class.getName()).log(Level.SEVERE, null, ex);
+            queueGUI.offer("Couldnt connect with broker: " + ex.getMessage());
         }
         
         topicPub = client.getTopic(topicPublishSensor);
@@ -62,10 +63,10 @@ public class TaskMQTT extends Thread implements MqttCallback{
             client.subscribe(topicSubscribeLogin);
         } 
         catch (MqttException ex) {
-            Logger.getLogger(TaskMQTT.class.getName()).log(Level.SEVERE, null, ex);
+            queueGUI.offer("Couldnt subscribe car topic: " + ex.getMessage());
         }
         
-        System.out.println("MQTT initialized.");        
+        queueGUI.offer("MQTT initialized.");        
     }
 
     public void run()
@@ -92,17 +93,16 @@ public class TaskMQTT extends Thread implements MqttCallback{
         try 
         { 
             topicPub.publish(message);
-            //System.out.println("message sent.");
         } 
         catch (MqttException ex) {
-            Logger.getLogger(TaskMQTT.class.getName()).log(Level.SEVERE, null, ex);
+            queueGUI.offer("Couldnt publish sensor data: " + ex.getMessage());
         }
     }
 
     @Override
     public void connectionLost(Throwable thrwbl) 
     {
-        System.out.println("Connection lost.");
+        queueGUI.offer("Connection lost.");
     }
 
     @Override
@@ -123,11 +123,14 @@ public class TaskMQTT extends Thread implements MqttCallback{
             String userFullName = user.getString("fullName");
             String email = user.getString("email");
 
-            Vehicle.logIn(userName, userFullName, email, timestamp);
+            Vehicle.logIn(userName, userFullName, email, timestamp);            
+            queueGUI.offer("User Logged In @" + new Timestamp(timestamp) + ": " + userName + " " + userFullName + " " + email);    
+            
         }
         else
         {
-            Vehicle.logOut(timestamp);               
+            Vehicle.logOut(timestamp);   
+            queueGUI.offer("User Logged Out @" + new Timestamp(timestamp) + ".");            
         }           
         
     }
@@ -135,6 +138,6 @@ public class TaskMQTT extends Thread implements MqttCallback{
     @Override
     public void deliveryComplete(IMqttDeliveryToken imdt) 
     {
-        //ystem.out.println("Delivery complete.");
+        //queueGUI.offer("Delivery complete.");
     }
 }

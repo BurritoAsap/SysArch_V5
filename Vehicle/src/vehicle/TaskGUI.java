@@ -5,9 +5,9 @@ import java.util.concurrent.BlockingQueue;
 
 public class TaskGUI extends Thread {
 
-    BlockingQueue<SensorData> queue;
+    BlockingQueue<String> queue;
 
-    public TaskGUI(BlockingQueue<SensorData> queue)
+    public TaskGUI(BlockingQueue<String> queue)
     {
         this.queue = queue;
     }
@@ -18,8 +18,8 @@ public class TaskGUI extends Thread {
         {           
             try
             {
-                SensorData data = queue.take();  
-                //System.out.println(data.toString());              
+                String message = queue.take();  
+                System.out.println(message);              
             }
             catch(InterruptedException e){
                 

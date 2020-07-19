@@ -1,21 +1,20 @@
 
 package vehicle;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
 public class TaskLogger extends Thread {
 
     BlockingQueue<SensorData> queue;
+    BlockingQueue<String> queueGUI;
 
     FileWriter writer;
 
-    public TaskLogger(BlockingQueue<SensorData> queue)
+    public TaskLogger(BlockingQueue<SensorData> queue, BlockingQueue<String> queueGUI)
     {
-        this.queue = queue;				
+        this.queue = queue;	
+        this.queueGUI = queueGUI;
     }
 
     public void run()
@@ -25,7 +24,7 @@ public class TaskLogger extends Thread {
             writer.write("-----New Logging Session-----" + System.lineSeparator());
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            queueGUI.offer("Couldnt create/open log: " + e.getMessage());
         }
 
         while(true)
@@ -55,7 +54,7 @@ public class TaskLogger extends Thread {
         } 
         catch (IOException e) 
         {
-            e.printStackTrace();
+            queueGUI.offer("Couldnt write to log file: " + e.getMessage());
         } 		
     }
 	

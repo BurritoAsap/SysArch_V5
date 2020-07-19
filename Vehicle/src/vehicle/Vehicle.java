@@ -9,8 +9,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class Vehicle {
-
-    private static volatile SensorData currentData;
     
     //Userdata
     private static String userName;
@@ -21,16 +19,19 @@ public class Vehicle {
 
     public static void main(String args[])
     {
-        BlockingQueue<SensorData> queueGUI = new ArrayBlockingQueue<>(50);
+        BlockingQueue<String> queueGUI = new ArrayBlockingQueue<>(50);
         BlockingQueue<SensorData> queueLogger = new ArrayBlockingQueue<>(50);
         BlockingQueue<SensorData> queueMQTT = new ArrayBlockingQueue<>(500);
+        
+        //Start GUI Task first for printlns
+        TaskGUI gui = new TaskGUI(queueGUI);
+        gui.start();
         
         SensorControl sensors = new SensorControl();
         
         TaskAcquisition acquisition = new TaskAcquisition(queueLogger, queueMQTT, queueGUI, sensors);
-        TaskLogger logger = new TaskLogger(queueLogger);
-        TaskGUI gui = new TaskGUI(queueGUI);
-        TaskMQTT mqtt = new TaskMQTT(queueMQTT);
+        TaskLogger logger = new TaskLogger(queueLogger, queueGUI);
+        TaskMQTT mqtt = new TaskMQTT(queueMQTT, queueGUI);
 
         acquisition.setPriority(6);
         logger.setPriority(5);
@@ -41,9 +42,8 @@ public class Vehicle {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         ScheduledFuture<?> scheduledTask = scheduler.scheduleAtFixedRate(acquisition, 0, 100, TimeUnit.MILLISECONDS);
 
-        //Start logger, mqtt and gui thread to run indefinitely
+        //Start logger and mqtt thread to run indefinitely
         logger.start();
-        gui.start();
         mqtt.start();
 
 
@@ -60,15 +60,12 @@ public class Vehicle {
         userEmail = email;
         loggedIn = true;
         timestamp = time;
-        
-        System.out.println("User Logged In @" + new Timestamp(timestamp) + ": " + userName + " " + userFullName + " " + userEmail);
     }
     
     public synchronized static void logOut(long time)
     {
         loggedIn = false;        
         timestamp = time;
-        System.out.println("User Logged Out @" + new Timestamp(timestamp) + ".");
     }
 
 	

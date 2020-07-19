@@ -2,19 +2,16 @@
 package vehicle;
 
 import com.pi4j.system.SystemInfo;
-import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TaskAcquisition extends Thread {
 	
     BlockingQueue<SensorData> queueLogger;
     BlockingQueue<SensorData> queueMQTT;
-    BlockingQueue<SensorData> queueGUI;
+    BlockingQueue<String> queueGUI;
     SensorControl sensors;
 
-    public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT,  BlockingQueue<SensorData> queueGUI, SensorControl sensors)
+    public TaskAcquisition(BlockingQueue<SensorData> queueLogger, BlockingQueue<SensorData> queueMQTT,  BlockingQueue<String> queueGUI, SensorControl sensors)
     {
         this.queueMQTT = queueMQTT;
         this.queueGUI = queueGUI;
@@ -31,49 +28,22 @@ public class TaskAcquisition extends Thread {
         addDataToQueue(queueLogger, data);
         
         //Add data to MQTT Queue
-        addDataToQueue(queueMQTT, data);
-        
-        //Add data to GUI Queue
-        addDataToQueue(queueGUI, data);
-        
+        addDataToQueue(queueMQTT, data);                
 
     }
     
     private boolean addDataToQueue(BlockingQueue<SensorData> queue, SensorData data)
     {
-        Boolean success;
+        Boolean success = queue.offer(data);           	
         
-        try
-        {
-            success = queue.add(data);
-
-        } catch (IllegalStateException  e) 
-        {
-            success = false;
-            e.printStackTrace();
-        }		
-        
+        //If queue is full
         if(!success)
         {
             SensorData removedData = queue.poll();
-            System.out.println("[" + queue + "] Queue is full. Data lost: " + removedData);
+            queueGUI.offer("[" + queue + "] Queue is full. Data lost: " + removedData);
 
-            //Try to add again
-            try
-            {
-                success = queue.add(data);
-            } 
-            catch (IllegalStateException  e) 
-            {
-                success = false;
-                e.printStackTrace();
-            }
-        }
-
-        //Notify waiting threads
-        synchronized(queue)
-        {
-            queue.notifyAll();
+            //Try to add data again            
+            success = queue.offer(data);
         }
         
         return success;
@@ -95,7 +65,7 @@ public class TaskAcquisition extends Thread {
             data.setCPUTemp(SystemInfo.getCpuTemperature());
         } 
         catch (Exception ex) {
-            System.out.println("Couldnt retrieve CPU temperature.");
+            queueGUI.offer("Couldnt retrieve CPU temperature.");
         }
 
         return data;
